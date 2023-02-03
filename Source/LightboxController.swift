@@ -1,4 +1,5 @@
 import UIKit
+import Drawsana
 
 public protocol LightboxControllerPageDelegate: AnyObject {
     
@@ -30,6 +31,7 @@ public protocol LightboxControllerDeleteDelegate: AnyObject {
 public protocol LightboxControllerEditDelegate: AnyObject {
     
     func lightboxController(_ controller: LightboxController, didTapEdit image: LightboxImage, at index: Int)
+    func lightboxController(_ controller: LightboxController, didGenerateImage image: LightboxImage, at index: Int)
 }
 
 open class LightboxController: UIViewController {
@@ -95,7 +97,20 @@ open class LightboxController: UIViewController {
         return view
     }()
     
+    private lazy var drawView: DrawsanaView = { [unowned self] in
+        let drawView = DrawsanaView()
+        drawView.translatesAutoresizingMaskIntoConstraints = false
+        
+        return drawView
+    }()
+    
     // MARK: - Properties
+    
+    open override var isEditing: Bool {
+        didSet {
+            updateViewForEditing()
+        }
+    }
     
     open fileprivate(set) var currentPage = 0 {
         didSet {
@@ -190,7 +205,7 @@ open class LightboxController: UIViewController {
         // Lightbox hasn't been optimized to be used in presentation styles other than fullscreen.
         modalPresentationStyle = .fullScreen
         
-        statusBarHidden = UIApplication.shared.isStatusBarHidden
+        statusBarHidden = view.window?.windowScene?.statusBarManager?.isStatusBarHidden == true
         
         view.backgroundColor = LightboxConfig.imageBackgroundColor
         transitionManager.lightboxController = self
@@ -344,12 +359,16 @@ open class LightboxController: UIViewController {
     }
     
     func toggleControls(pageView: PageView?, visible: Bool, duration: TimeInterval = 0.1, delay: TimeInterval = 0) {
+        
         let alpha: CGFloat = visible ? 1.0 : 0.0
+        let isPageViewEditable = pageViews[currentPage].isEditable == true
         
         pageView?.playButton.isHidden = !visible
         
+        // TODO: JR
         UIView.animate(withDuration: duration, delay: delay, options: [], animations: {
             self.headerView.alpha = alpha
+            self.headerView.editButton.isHidden = !isPageViewEditable
             self.footerView.alpha = alpha
             pageView?.playButton.alpha = alpha
         }, completion: nil)
@@ -402,6 +421,10 @@ extension LightboxController: UIScrollViewDelegate {
 // MARK: - PageViewDelegate
 
 extension LightboxController: PageViewDelegate {
+    func pageViewDidUpdateEditability(_ pageView: PageView) {
+        let duration = pageView.hasZoomed ? 0.1 : 0.5
+        toggleControls(pageView: pageView, visible: !pageView.hasZoomed, duration: duration, delay: 0.5)
+    }
     
     func remoteImageDidLoad(_ image: UIImage?, imageView: UIImageView) {
         guard let image = image, dynamicBackground else {
@@ -441,6 +464,16 @@ extension LightboxController: PageViewDelegate {
     func pageViewDidDoubleTap(_ pageView: PageView) {
         imageTapDelegate?.lightboxController(self, didDoubleTap: images[currentPage], at: currentPage)
     }
+    
+    private func updateViewForEditing() {
+
+        pageViews[currentPage].isEditing = isEditing
+        headerView.isEditing = isEditing
+        footerView.isHidden = isEditing
+        scrollView.isScrollEnabled = !isEditing
+        
+        imageEditDelegate?.lightboxController(self, didTapEdit: images[currentPage], at: currentPage)
+    }
 }
 
 // MARK: - HeaderViewDelegate
@@ -448,7 +481,12 @@ extension LightboxController: PageViewDelegate {
 extension LightboxController: HeaderViewDelegate {
     
     func headerView(_ headerView: HeaderView, didPressEditButton editButton: UIButton) {
-        imageEditDelegate?.lightboxController(self, didTapEdit: images[currentPage], at: currentPage)
+        
+        guard pageViews[currentPage].isEditable else {
+            return
+        }
+        
+        isEditing.toggle()
     }
     
     func headerView(_ headerView: HeaderView, didPressDeleteButton deleteButton: UIButton) {
@@ -482,10 +520,25 @@ extension LightboxController: HeaderViewDelegate {
     }
     
     func headerView(_ headerView: HeaderView, didPressCloseButton closeButton: UIButton) {
-        closeButton.isEnabled = false
-        presented = false
-        dismissalDelegate?.lightboxControllerWillDismiss(self)
-        dismiss(animated: true, completion: nil)
+        if isEditing {
+            
+            pageViews[currentPage].generateEditedImage { [weak self] image, error in
+                
+                guard let self else {
+                    return
+                }
+                
+                self.isEditing = false
+            }
+            
+        } else {
+            
+            closeButton.isEnabled = false
+
+            presented = false
+            dismissalDelegate?.lightboxControllerWillDismiss(self)
+            dismiss(animated: true, completion: nil)
+        }
     }
 }
 

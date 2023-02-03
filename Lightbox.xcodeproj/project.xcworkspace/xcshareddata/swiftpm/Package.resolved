@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "drawsana",
+      "kind" : "remoteSourceControl",
+      "location" : "http://github.com/Asana/Drawsana",
+      "state" : {
+        "revision" : "8bf7c57ddb7e958315f1c1127cd92ba733cf5b10",
+        "version" : "0.12.0"
+      }
+    },
+    {
       "identity" : "sdwebimage",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/SDWebImage/SDWebImage.git",

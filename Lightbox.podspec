@@ -14,5 +14,6 @@ Pod::Spec.new do |s|
 
   s.frameworks = 'UIKit', 'AVFoundation', 'AVKit'
   s.swift_version = '5.0'
+  s.dependency 'Drawsana', '~> 1.0'
 
 end

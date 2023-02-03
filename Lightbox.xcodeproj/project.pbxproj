@@ -18,6 +18,10 @@
 		D22006741DFB4D9700E92898 /* Lightbox.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D22006731DFB4D9700E92898 /* Lightbox.bundle */; };
 		D2258CC4215CD035005A9A1C /* Color+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2258CC3215CD035005A9A1C /* Color+Extensions.swift */; };
 		D2D71BBC1D54DA77006AB907 /* AssetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D71BBB1D54DA77006AB907 /* AssetManager.swift */; };
+		D330A672298B61F2001B1F86 /* Drawsana in Frameworks */ = {isa = PBXBuildFile; productRef = D330A671298B61F2001B1F86 /* Drawsana */; };
+		D330A674298B7154001B1F86 /* EditPanelView.xib in Resources */ = {isa = PBXBuildFile; fileRef = D330A673298B7154001B1F86 /* EditPanelView.xib */; };
+		D330A676298B7487001B1F86 /* EditPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D330A675298B7487001B1F86 /* EditPanelView.swift */; };
+		D330A678298B7686001B1F86 /* UIView+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D330A677298B7686001B1F86 /* UIView+Extensions.swift */; };
 		D5026B3C1C5BF3FD003BC1A3 /* LightboxImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5026B3B1C5BF3FD003BC1A3 /* LightboxImage.swift */; };
 		D523B0BD1C43AA8B001AD1EC /* LightboxConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D523B0B61C43AA8A001AD1EC /* LightboxConfig.swift */; };
 		D523B0BE1C43AA8B001AD1EC /* LightboxController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D523B0B71C43AA8A001AD1EC /* LightboxController.swift */; };
@@ -66,6 +70,9 @@
 		D22006731DFB4D9700E92898 /* Lightbox.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Lightbox.bundle; sourceTree = "<group>"; };
 		D2258CC3215CD035005A9A1C /* Color+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Extensions.swift"; sourceTree = "<group>"; };
 		D2D71BBB1D54DA77006AB907 /* AssetManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AssetManager.swift; sourceTree = "<group>"; };
+		D330A673298B7154001B1F86 /* EditPanelView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = EditPanelView.xib; sourceTree = "<group>"; };
+		D330A675298B7487001B1F86 /* EditPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPanelView.swift; sourceTree = "<group>"; };
+		D330A677298B7686001B1F86 /* UIView+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Extensions.swift"; sourceTree = "<group>"; };
 		D5026B3B1C5BF3FD003BC1A3 /* LightboxImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LightboxImage.swift; sourceTree = "<group>"; };
 		D523B0A91C43AA2A001AD1EC /* Lightbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Lightbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D523B0AE1C43AA2A001AD1EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -95,6 +102,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				85CB007027B16C6900A47BB3 /* SDWebImage in Frameworks */,
+				D330A672298B61F2001B1F86 /* Drawsana in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,6 +189,8 @@
 				D58A18CA1C5ABF8F000024BB /* FooterView.swift */,
 				D54DFCBD1C5AAAD600ADEA0E /* PageView.swift */,
 				D54DFCBC1C5AAAD600ADEA0E /* InfoLabel.swift */,
+				D330A673298B7154001B1F86 /* EditPanelView.xib */,
+				D330A675298B7487001B1F86 /* EditPanelView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -192,6 +202,7 @@
 				D573A2F21C5B5C7B006053DD /* LayoutConfigurable.swift */,
 				D573A2F61C5B5E55006053DD /* UIView+Gradient.swift */,
 				D2258CC3215CD035005A9A1C /* Color+Extensions.swift */,
+				D330A677298B7686001B1F86 /* UIView+Extensions.swift */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -244,6 +255,7 @@
 			name = "Lightbox-iOS";
 			packageProductDependencies = (
 				85CB006F27B16C6900A47BB3 /* SDWebImage */,
+				D330A671298B61F2001B1F86 /* Drawsana */,
 			);
 			productName = Lightbox;
 			productReference = D523B0A91C43AA2A001AD1EC /* Lightbox.framework */;
@@ -280,6 +292,7 @@
 			mainGroup = D523B09F1C43AA2A001AD1EC;
 			packageReferences = (
 				85CB006E27B16C6900A47BB3 /* XCRemoteSwiftPackageReference "SDWebImage" */,
+				D330A670298B61F2001B1F86 /* XCRemoteSwiftPackageReference "Drawsana" */,
 			);
 			productRefGroup = D523B0AA1C43AA2A001AD1EC /* Products */;
 			projectDirPath = "";
@@ -306,6 +319,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D22006741DFB4D9700E92898 /* Lightbox.bundle in Resources */,
+				D330A674298B7154001B1F86 /* EditPanelView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -331,9 +345,11 @@
 				D523B0BD1C43AA8B001AD1EC /* LightboxConfig.swift in Sources */,
 				D573A2F31C5B5C7B006053DD /* LayoutConfigurable.swift in Sources */,
 				D5026B3C1C5BF3FD003BC1A3 /* LightboxImage.swift in Sources */,
+				D330A678298B7686001B1F86 /* UIView+Extensions.swift in Sources */,
 				D523B0BE1C43AA8B001AD1EC /* LightboxController.swift in Sources */,
 				D54DFCBE1C5AAAD600ADEA0E /* InfoLabel.swift in Sources */,
 				D58A18CB1C5ABF8F000024BB /* FooterView.swift in Sources */,
+				D330A676298B7487001B1F86 /* EditPanelView.swift in Sources */,
 				D573A2F01C5B5605006053DD /* HeaderView.swift in Sources */,
 				D573A2F51C5B5CA4006053DD /* LightboxTransition.swift in Sources */,
 				D2258CC4215CD035005A9A1C /* Color+Extensions.swift in Sources */,
@@ -375,13 +391,14 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = C3E2934R25;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = iOSDemo/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -407,13 +424,14 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = C3E2934R25;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = iOSDemo/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -558,7 +576,7 @@
 				);
 				INFOPLIST_FILE = Lightbox/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -588,7 +606,7 @@
 				);
 				INFOPLIST_FILE = Lightbox/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -644,6 +662,14 @@
 				minimumVersion = 5.0.0;
 			};
 		};
+		D330A670298B61F2001B1F86 /* XCRemoteSwiftPackageReference "Drawsana" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "http://github.com/Asana/Drawsana";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.4;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -651,6 +677,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 85CB006E27B16C6900A47BB3 /* XCRemoteSwiftPackageReference "SDWebImage" */;
 			productName = SDWebImage;
+		};
+		D330A671298B61F2001B1F86 /* Drawsana */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D330A670298B61F2001B1F86 /* XCRemoteSwiftPackageReference "Drawsana" */;
+			productName = Drawsana;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

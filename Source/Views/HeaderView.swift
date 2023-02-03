@@ -9,7 +9,7 @@ protocol HeaderViewDelegate: AnyObject {
 open class HeaderView: UIView {
     open fileprivate(set) lazy var editButton: UIButton = { [unowned self] in
         let title = NSAttributedString(
-            string: LightboxConfig.EditButton.text,
+            string: LightboxConfig.EditButton.editText,
             attributes: LightboxConfig.EditButton.textAttributes)
         
         let button = UIButton(type: .system)
@@ -91,6 +91,12 @@ open class HeaderView: UIView {
     
     weak var delegate: HeaderViewDelegate?
     
+    var isEditing = false {
+        didSet {
+            updateView()
+        }
+    }
+    
     // MARK: - Initializers
     
     public init() {
@@ -117,6 +123,35 @@ open class HeaderView: UIView {
     
     @objc func editButtonDidPress(_ button: UIButton) {
         delegate?.headerView(self, didPressEditButton: button)
+    }
+    
+    private func updateView() {
+        
+        let editButtonTitle = NSAttributedString(
+            string: isEditing ? LightboxConfig.EditButton.cancelText : LightboxConfig.EditButton.editText,
+            attributes: LightboxConfig.CloseButton.textAttributes)
+        editButton.setAttributedTitle(editButtonTitle, for: UIControl.State())
+        
+        if let editButtonSize = LightboxConfig.EditButton.size {
+            editButton.frame.size = editButtonSize
+        } else {
+            editButton.sizeToFit()
+        }
+        
+        editButton.setNeedsDisplay()
+
+        let closeButtonTitle = NSAttributedString(
+            string: isEditing ? LightboxConfig.CloseButton.saveText : LightboxConfig.CloseButton.text,
+            attributes: LightboxConfig.CloseButton.textAttributes)
+        closeButton.setAttributedTitle(closeButtonTitle, for: UIControl.State())
+        
+        if let closeButtonSize = LightboxConfig.CloseButton.size {
+            closeButton.frame.size = closeButtonSize
+        } else {
+            closeButton.sizeToFit()
+        }
+        
+        closeButton.setNeedsDisplay()
     }
 }
 

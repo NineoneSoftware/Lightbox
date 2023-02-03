@@ -28,8 +28,8 @@ public class LightboxConfig {
     
     /// Number of images to preload.
     ///
-    /// 0 - Preload all images (default).
-    public static var preload = 0
+    /// 5 - Preload 5  images (default).
+    public static var preload = 5
     
     public struct PageIndicator {
         public static var enabled = true
@@ -49,8 +49,9 @@ public class LightboxConfig {
     public struct EditButton {
         public static var enabled = true
         public static var size: CGSize?
-        public static var text = NSLocalizedString("Edit", comment: "")
-        public static var image: UIImage? = UIImage(systemName: "square.and.pencil")
+        public static var editText = NSLocalizedString("Edit", comment: "")
+        public static var cancelText = NSLocalizedString("Cancel", comment: "")
+        public static var image: UIImage? = nil
         
         public static var textAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: 16),
@@ -63,10 +64,17 @@ public class LightboxConfig {
         ]
     }
     
+    public struct StrokeWidth {
+        public static var thinWidth: CGFloat = 1.0
+        public static var mediumWidth: CGFloat = 5.0
+        public static var largeWidth: CGFloat = 10.0
+    }
+    
     public struct CloseButton {
         public static var enabled = true
         public static var size: CGSize?
         public static var text = NSLocalizedString("Close", comment: "")
+        public static var saveText = NSLocalizedString("Save", comment: "")
         public static var image: UIImage?
         
         public static var textAttributes: [NSAttributedString.Key: Any] = [

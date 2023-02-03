@@ -8,7 +8,9 @@ let package = Package(
             name: "Lightbox",
             targets: ["Lightbox"]),
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "http://github.com/Asana/Drawsana", from: Version(0, 9, 4))
+    ],
     targets: [
         .target(
             name: "Lightbox",

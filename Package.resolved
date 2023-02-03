@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Drawsana",
+        "repositoryURL": "http://github.com/Asana/Drawsana",
+        "state": {
+          "branch": null,
+          "revision": "8bf7c57ddb7e958315f1c1127cd92ba733cf5b10",
+          "version": "0.12.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
