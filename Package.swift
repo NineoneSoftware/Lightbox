@@ -16,8 +16,9 @@ let package = Package(
         .target(
             name: "Lightbox",
             dependencies: ["Drawsana"],
-            path: "Source"
-            )
+            path: "Source",
+            resources: [.process("Views/EditPanelView.xib")]
+        )
     ],
     swiftLanguageVersions: [.v5]
 )

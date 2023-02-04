@@ -79,8 +79,6 @@ open class LightboxImage {
     private func isStaticImage(_ image: UIImage, completion: @escaping (Bool) -> Void) {
         
         DispatchQueue.global().async {
-            let duration = image.duration
-
             if let imageData = image.cgImage?.dataProvider?.data,
                let source = CGImageSourceCreateWithData(imageData, nil) {
                 
