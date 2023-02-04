@@ -14,7 +14,7 @@ let package = Package(
     targets: [
         .target(
             name: "Lightbox",
-            dependencies: [],
+            dependencies: ["Drawsana"],
             path: "Source"
             )
     ],
