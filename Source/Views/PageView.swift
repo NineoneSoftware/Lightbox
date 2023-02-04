@@ -68,10 +68,7 @@ class PageView: UIScrollView {
         return zoomScale != 1.0
     }
     
-    private var drawView: DrawsanaView?
-    private lazy var editPanelView: EditPanelView = .fromNib()
-    private lazy var penTool = PenTool()
-    private lazy var eraserTool = EraserTool()
+    private(set) var drawView: DrawsanaView?
     
     // MARK: - Initializers
     
@@ -93,13 +90,7 @@ class PageView: UIScrollView {
             return
         }
         
-        let drawView = DrawsanaView(frame: imageView.frame)
-        drawView.set(tool: penTool)
-        drawView.userSettings.strokeWidth = 5
-        drawView.userSettings.strokeColor = .red
-        drawView.userSettings.fillColor = .red
-        drawView.delegate = self
-        
+        let drawView = DrawsanaView(frame: imageView.frame)        
         addSubview(drawView)
         self.drawView = drawView
     }
@@ -110,19 +101,6 @@ class PageView: UIScrollView {
         }
         
         drawView.isHidden = !show
-        
-        updateEditPanelState()
-        
-        let animator = UIViewPropertyAnimator(duration: 0.1, curve: .easeOut) { [weak self] in
-            
-            self?.editPanelView.alpha = show ? 1 : 0
-        }
-        animator.addCompletion { [weak self] position in
-            if position == .end {
-                self?.editPanelView.isHidden = !show
-            }
-        }
-        animator.startAnimation()
     }
 
     
@@ -134,11 +112,6 @@ class PageView: UIScrollView {
         updatePlayButton()
         
         addSubview(loadingIndicator)
-        
-        addSubview(editPanelView)
-        editPanelView.isHidden = true
-        editPanelView.alpha = 0
-        editPanelView.delegate = self
         
         delegate = self
         isMultipleTouchEnabled = true
@@ -156,16 +129,6 @@ class PageView: UIScrollView {
         addGestureRecognizer(tapRecognizer)
         
         tapRecognizer.require(toFail: doubleTapRecognizer)
-    }
-    
-    private func updateEditPanelState() {
-        editPanelView.redoButton.isEnabled = drawView?.operationStack.canRedo == true
-        editPanelView.undoButton.isEnabled = drawView?.operationStack.canUndo == true
-        
-        editPanelView.redoButton.alpha = editPanelView.redoButton.isEnabled ? 1 : 0.5
-        editPanelView.undoButton.alpha = editPanelView.undoButton.isEnabled ? 1 : 0.5
-        
-        editPanelView.colorSelector.selectedColor = drawView?.userSettings.strokeColor
     }
     
     // MARK: - Update
@@ -227,16 +190,20 @@ class PageView: UIScrollView {
                 return
             }
             
-            self?.image = LightboxImage(image: image)
-            self?.fetchImage()
-            
-            while drawView.operationStack.canUndo {
-                drawView.operationStack.undo()
-            }
-            
-            drawView.operationStack.clearRedoStack()
             completion(image, nil)
         }
+    }
+    
+    func clearAllMarkUp() {
+        guard let drawView else {
+            return
+        }
+        
+        while drawView.operationStack.canUndo {
+            drawView.operationStack.undo()
+        }
+        
+        drawView.operationStack.clearRedoStack()
     }
     
     // MARK: - Recognizers
@@ -339,7 +306,6 @@ extension PageView: LayoutConfigurable {
         imageView.frame = frame
         zoomScale = minimumZoomScale
         drawView?.frame = frame
-        editPanelView.frame = CGRect(x: 0, y: frame.size.height - 128, width: frame.size.width - 20, height: 128)
         configureImageView()
     }
 }
@@ -362,71 +328,3 @@ extension PageView: UIScrollViewDelegate {
     }
 }
 
-// MARK: - EditPanelViewDelegate
-
-extension PageView: EditPanelViewDelegate {
-    func editPanelView(_ editPanelView: EditPanelView, didChangeStrokeWidth width: EditInputStrokeWidth) {
-        drawView?.userSettings.strokeWidth = width.widthValue
-    }
-    
-    func editPanelView(_ editPanelView: EditPanelView, didChangeInput input: EditInputTool) {
-        
-        switch input {
-        case .pen:
-            drawView?.set(tool: penTool)
-        case .eraser:
-            drawView?.set(tool: eraserTool)
-        case .color:
-            drawView?.userSettings.strokeColor = editPanelView.selectedColor ?? .blue
-        }
-    }
-    
-    func editPanelView(_ editPanelView: EditPanelView, didExecuteAction action: EditInputAction) {
-        
-        switch action {
-        case .save:
-            break
-        case .forward:
-            drawView?.operationStack.redo()
-        case .reverse:
-            drawView?.operationStack.undo()
-        }
-        
-        updateEditPanelState()
-    }
-}
-
-// MARK: - DrawsanaViewDelegate
-extension PageView: DrawsanaViewDelegate {
-    func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didSwitchTo tool: Drawsana.DrawingTool) {
-        
-    }
-    
-    func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didStartDragWith tool: Drawsana.DrawingTool) {
-        
-    }
-    
-    func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didEndDragWith tool: Drawsana.DrawingTool) {
-        updateEditPanelState()
-    }
-    
-    func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didChangeStrokeColor strokeColor: UIColor?) {
-        
-    }
-    
-    func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didChangeFillColor fillColor: UIColor?) {
-        
-    }
-    
-    func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didChangeStrokeWidth strokeWidth: CGFloat) {
-        
-    }
-    
-    func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didChangeFontName fontName: String) {
-        
-    }
-    
-    func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didChangeFontSize fontSize: CGFloat) {
-        
-    }
-}

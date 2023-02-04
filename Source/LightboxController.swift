@@ -31,10 +31,25 @@ public protocol LightboxControllerDeleteDelegate: AnyObject {
 public protocol LightboxControllerEditDelegate: AnyObject {
     
     func lightboxController(_ controller: LightboxController, didTapEdit image: LightboxImage, at index: Int)
-    func lightboxController(_ controller: LightboxController, didGenerateImage image: LightboxImage, at index: Int)
+    func lightboxController(_ controller: LightboxController, didGenerateImage image: UIImage?, at index: Int) -> Bool
 }
 
 open class LightboxController: UIViewController {
+    
+    class DrawSettings {
+        
+        var fillColor: UIColor
+        var strokeWidth: EditInputStrokeWidth
+        var drawTool: EditInputTool
+        
+        internal init(fillColor: UIColor, strokeWidth: EditInputStrokeWidth, drawTool: EditInputTool) {
+            self.fillColor = fillColor
+            self.strokeWidth = strokeWidth
+            self.drawTool = drawTool
+        }
+        
+        static let defaultSettings: DrawSettings = DrawSettings(fillColor: .red, strokeWidth: .medium, drawTool: .pen)
+    }
     
     // MARK: - Internal views
     
@@ -102,6 +117,12 @@ open class LightboxController: UIViewController {
         drawView.translatesAutoresizingMaskIntoConstraints = false
         
         return drawView
+    }()
+    
+    private lazy var editPanelView: EditPanelView = .fromNib()
+    private lazy var drawSettings: DrawSettings = {
+        let settings = DrawSettings.defaultSettings
+        return settings
     }()
     
     // MARK: - Properties
@@ -214,6 +235,19 @@ open class LightboxController: UIViewController {
         
         [scrollView, overlayView, headerView, footerView].forEach { view.addSubview($0) }
         overlayView.addGestureRecognizer(overlayTapGestureRecognizer)
+        
+        view.addSubview(editPanelView)
+        editPanelView.isHidden = true
+        editPanelView.alpha = 0
+        editPanelView.delegate = self
+        editPanelView.translatesAutoresizingMaskIntoConstraints = false
+        let editPanelPadding: CGFloat = 20.0
+        NSLayoutConstraint.activate([
+            editPanelView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: editPanelPadding),
+            editPanelView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -editPanelPadding),
+            editPanelView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -editPanelPadding),
+            editPanelView.heightAnchor.constraint(equalToConstant: EditPanelView.minHeight)
+        ])
         
         configurePages(initialImages)
         
@@ -328,6 +362,12 @@ open class LightboxController: UIViewController {
         footerView.expand(false)
     }
     
+    // MARK: - Editing
+    
+    public func clearAllMarkUp() {
+        pageViews[currentPage].clearAllMarkUp()
+    }
+    
     // MARK: - Layout
     
     open func configureLayout(_ size: CGSize) {
@@ -365,7 +405,6 @@ open class LightboxController: UIViewController {
         
         pageView?.playButton.isHidden = !visible
         
-        // TODO: JR
         UIView.animate(withDuration: duration, delay: delay, options: [], animations: {
             self.headerView.alpha = alpha
             self.headerView.editButton.isHidden = !isPageViewEditable
@@ -466,13 +505,52 @@ extension LightboxController: PageViewDelegate {
     }
     
     private func updateViewForEditing() {
-
+        
         pageViews[currentPage].isEditing = isEditing
         headerView.isEditing = isEditing
         footerView.isHidden = isEditing
         scrollView.isScrollEnabled = !isEditing
+
+        updateDrawViewSettings()
+        updateEditPanelState()
         
         imageEditDelegate?.lightboxController(self, didTapEdit: images[currentPage], at: currentPage)
+    }
+    
+    private func updateDrawViewSettings() {
+        let drawView = pageViews[currentPage].drawView
+        drawView?.set(tool: drawSettings.drawTool.drawTool)
+        drawView?.userSettings.strokeWidth = drawSettings.strokeWidth.widthValue
+        drawView?.userSettings.strokeColor = drawSettings.fillColor
+        drawView?.userSettings.fillColor = drawSettings.fillColor
+        drawView?.delegate = self
+    }
+    
+    private func updateEditPanelState() {
+        
+        let isEditing = isEditing
+        let animator = UIViewPropertyAnimator(duration: 0.1, curve: .easeOut) { [weak self] in
+            
+            self?.editPanelView.alpha = isEditing ? 1 : 0
+        }
+        animator.addCompletion { [weak self] position in
+            if position == .end {
+                self?.editPanelView.isHidden = !isEditing
+            }
+        }
+        animator.startAnimation()
+        
+        let drawView = pageViews[currentPage].drawView
+        
+        editPanelView.redoButton.isEnabled = drawView?.operationStack.canRedo == true
+        editPanelView.undoButton.isEnabled = drawView?.operationStack.canUndo == true
+        
+        editPanelView.redoButton.alpha = editPanelView.redoButton.isEnabled ? 1 : 0.5
+        editPanelView.undoButton.alpha = editPanelView.undoButton.isEnabled ? 1 : 0.5
+        
+        editPanelView.colorSelector.selectedColor = drawView?.userSettings.strokeColor
+        
+        editPanelView.updateMenuState(drawSettings: drawSettings)
     }
 }
 
@@ -528,7 +606,8 @@ extension LightboxController: HeaderViewDelegate {
                     return
                 }
                 
-                self.isEditing = false
+                let continueEditing = self.imageEditDelegate?.lightboxController(self, didGenerateImage: image, at: self.currentPage) ?? false
+                self.isEditing = continueEditing
             }
             
         } else {
@@ -553,3 +632,78 @@ extension LightboxController: FooterViewDelegate {
         })
     }
 }
+
+// MARK: - EditPanelViewDelegate
+
+extension LightboxController: EditPanelViewDelegate {
+    func editPanelView(_ editPanelView: EditPanelView, didChangeColor color: UIColor?) {
+        drawSettings.fillColor = color ?? .red
+        updateDrawViewSettings()
+    }
+    
+    func editPanelView(_ editPanelView: EditPanelView, didChangeStrokeWidth width: EditInputStrokeWidth) {
+        
+        drawSettings.strokeWidth = width
+        updateDrawViewSettings()
+        editPanelView.updateMenuState(drawSettings: drawSettings)
+    }
+    
+    func editPanelView(_ editPanelView: EditPanelView, didChangeInput input: EditInputTool) {
+        
+        drawSettings.drawTool = input
+        updateDrawViewSettings()
+        editPanelView.updateMenuState(drawSettings: drawSettings)
+    }
+    
+    func editPanelView(_ editPanelView: EditPanelView, didExecuteAction action: EditInputAction) {
+        
+        let drawView = pageViews[currentPage].drawView
+
+        switch action {
+        case .save:
+            break
+        case .forward:
+            drawView?.operationStack.redo()
+        case .reverse:
+            drawView?.operationStack.undo()
+        }
+        
+        updateEditPanelState()
+    }
+}
+
+// MARK: - DrawsanaViewDelegate
+extension LightboxController: DrawsanaViewDelegate {
+    public func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didSwitchTo tool: Drawsana.DrawingTool) {
+        
+    }
+    
+    public func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didStartDragWith tool: Drawsana.DrawingTool) {
+        
+    }
+    
+    public func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didEndDragWith tool: Drawsana.DrawingTool) {
+        updateEditPanelState()
+    }
+    
+    public func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didChangeStrokeColor strokeColor: UIColor?) {
+        
+    }
+    
+    public func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didChangeFillColor fillColor: UIColor?) {
+        
+    }
+    
+    public func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didChangeStrokeWidth strokeWidth: CGFloat) {
+        
+    }
+    
+    public func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didChangeFontName fontName: String) {
+        
+    }
+    
+    public func drawsanaView(_ drawsanaView: Drawsana.DrawsanaView, didChangeFontSize fontSize: CGFloat) {
+        
+    }
+}
+
