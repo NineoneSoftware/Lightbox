@@ -29,9 +29,9 @@ public protocol LightboxControllerDeleteDelegate: AnyObject {
 }
 
 public protocol LightboxControllerEditDelegate: AnyObject {
-    
+    func lightboxController(_ controller: LightboxController, shouldToggleEditMode handler: @escaping (Bool) -> Void)
     func lightboxController(_ controller: LightboxController, didTapEdit image: LightboxImage, at index: Int)
-    func lightboxController(_ controller: LightboxController, didGenerateImage image: UIImage?, at index: Int) -> Bool
+    func lightboxController(_ controller: LightboxController, didGenerateImage image: UIImage?, at index: Int, completion: @escaping (_ finishEditing: Bool, _ clearEdits: Bool) -> Void)
 }
 
 open class LightboxController: UIViewController {
@@ -49,6 +49,10 @@ open class LightboxController: UIViewController {
         }
         
         static let defaultSettings: DrawSettings = DrawSettings(fillColor: .red, strokeWidth: .medium, drawTool: .pen)
+        
+        deinit {
+            print("~~~ DRAWSETTINGS GO BYEYBYE")
+        }
     }
     
     // MARK: - Internal views
@@ -110,13 +114,6 @@ open class LightboxController: UIViewController {
         view.alpha = 0
         
         return view
-    }()
-    
-    private lazy var drawView: DrawsanaView = { [unowned self] in
-        let drawView = DrawsanaView()
-        drawView.translatesAutoresizingMaskIntoConstraints = false
-        
-        return drawView
     }()
     
     private lazy var editPanelView: EditPanelView = .fromNib()
@@ -295,7 +292,18 @@ open class LightboxController: UIViewController {
         }, completion: nil)
     }
     
+    // MARK: - Update Images
+    
+    public func addImage(_ image: LightboxImage) {
+        images.insert(image, at: currentPage)
+    }
+    
+    public func updateCurrentPageImage(image: LightboxImage) {
+        pageViews[currentPage].update(with: image)
+    }
+    
     // MARK: - Configuration
+    
     
     func configurePages(_ images: [LightboxImage]) {
         pageViews.forEach { $0.removeFromSuperview() }
@@ -519,8 +527,10 @@ extension LightboxController: PageViewDelegate {
     
     private func updateDrawViewSettings() {
         let drawView = pageViews[currentPage].drawView
-        drawView?.set(tool: drawSettings.drawTool.drawTool)
-        drawView?.userSettings.strokeWidth = drawSettings.strokeWidth.widthValue
+        let drawTool = drawSettings.drawTool.drawTool
+       
+        drawView?.set(tool: drawTool)
+        drawView?.userSettings.strokeWidth = drawSettings.strokeWidth.widthValue * drawSettings.drawTool.strokeWidthMultiplier
         drawView?.userSettings.strokeColor = drawSettings.fillColor
         drawView?.userSettings.fillColor = drawSettings.fillColor
         drawView?.delegate = self
@@ -552,6 +562,14 @@ extension LightboxController: PageViewDelegate {
         
         editPanelView.updateMenuState(drawSettings: drawSettings)
     }
+    
+    public func isEditsEmpty() -> Bool {
+        return pageViews[currentPage].isEditsEmpty()
+    }
+    
+    public func clearEdits() {
+        pageViews[currentPage].clearAllMarkUp()
+    }
 }
 
 // MARK: - HeaderViewDelegate
@@ -561,6 +579,18 @@ extension LightboxController: HeaderViewDelegate {
     func headerView(_ headerView: HeaderView, didPressEditButton editButton: UIButton) {
         
         guard pageViews[currentPage].isEditable else {
+            return
+        }
+        
+        if let imageEditDelegate = self.imageEditDelegate {
+            
+            imageEditDelegate.lightboxController(self, shouldToggleEditMode: { [weak self] shouldEdit in
+                guard shouldEdit else {
+                    return
+                }
+                
+                self?.isEditing.toggle()
+            })
             return
         }
         
@@ -606,8 +636,16 @@ extension LightboxController: HeaderViewDelegate {
                     return
                 }
                 
-                let continueEditing = self.imageEditDelegate?.lightboxController(self, didGenerateImage: image, at: self.currentPage) ?? false
-                self.isEditing = continueEditing
+                self.imageEditDelegate?.lightboxController(self, didGenerateImage: image, at: self.currentPage, completion: { [weak self] finishEdits, clearMarkUp in
+                    
+                    if finishEdits {
+                        self?.isEditing = false
+                    }
+                    
+                    if clearMarkUp {
+                        self?.clearAllMarkUp()
+                    }
+                })
             }
             
         } else {

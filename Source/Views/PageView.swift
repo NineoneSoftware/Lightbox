@@ -194,15 +194,18 @@ class PageView: UIScrollView {
         }
     }
     
+    func isEditsEmpty() -> Bool {
+        drawView?.drawing.shapes.isEmpty == true
+    }
+    
     func clearAllMarkUp() {
         guard let drawView else {
             return
         }
         
-        while drawView.operationStack.canUndo {
-            drawView.operationStack.undo()
+        for shape in drawView.drawing.shapes {
+            drawView.drawing.remove(shape: shape)
         }
-        
         drawView.operationStack.clearRedoStack()
     }
     

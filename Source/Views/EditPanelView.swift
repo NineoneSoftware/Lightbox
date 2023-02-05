@@ -15,11 +15,11 @@ enum EditInputTool: String {
     
     var displayName: String {
         switch self {
-        case .pen:
-            return NSLocalizedString("Pen", comment: "")
             
         case .eraser:
             return NSLocalizedString("Eraser", comment: "")
+        case .pen:
+            return NSLocalizedString("Pen", comment: "")
         }
     }
     
@@ -29,6 +29,25 @@ enum EditInputTool: String {
             return PenTool()
         case .eraser:
             return EraserTool()
+        }
+    }
+    
+    var icon: UIImage? {
+        switch self {
+        case .pen:
+            return UIImage(systemName: "highlighter")
+        case .eraser:
+            return UIImage(systemName: "paintbrush.fill")
+
+        }
+    }
+    
+    var strokeWidthMultiplier: CGFloat {
+        switch self {
+        case .pen:
+            return 1.0
+        case .eraser:
+            return 2.0
         }
     }
 }
@@ -87,7 +106,7 @@ final class EditPanelView: UIView {
     @IBOutlet weak var strokeWidthButton: UIButton!
     @IBOutlet weak var undoButton: UIButton!
     @IBOutlet weak var redoButton: UIButton!
-    
+        
     weak var delegate: EditPanelViewDelegate?
     
     var selectedColor: UIColor? = .blue
@@ -121,12 +140,54 @@ final class EditPanelView: UIView {
     
     func updateMenuState(drawSettings: LightboxController.DrawSettings) {
         
-        strokeWidthButton.menu = createStrokeWidthMenu(drawSettings: drawSettings)
-        markupSelectButton.menu = createInputToolMenu(drawSettings: drawSettings)
+        let markupMenu = createInputToolMenu(drawSettings: drawSettings)
+        let strokeWidthMenu = createStrokeWidthMenu(drawSettings: drawSettings)
+
+        if let strokeWidthTitle = strokeWidthMenu.children.first(where: { ($0 as? UIAction)?.state == .on })?.title {
+            if strokeWidthButton.title(for: UIControl.State()) != strokeWidthTitle {
+                strokeWidthButton.setTitle(strokeWidthTitle, for: UIControl.State())
+            }
+        }
+        
+        if let markupTitle = markupMenu.children.first(where: { ($0 as? UIAction)?.state == .on})?.title {
+            if markupSelectButton.title(for: UIControl.State()) != markupTitle {
+                markupSelectButton.setTitle(markupTitle, for: UIControl.State())
+            }
+        }
+
+        markupSelectButton.setImage(drawSettings.drawTool.icon, for: UIControl.State())
+
+        markupSelectButton.menu = markupMenu
+        
+        strokeWidthButton.menu = strokeWidthMenu
+    }
+    
+    private func createInputToolMenu(drawSettings: LightboxController.DrawSettings) -> UIMenu {
+        
+        let pen = EditInputTool.pen
+        let eraser = EditInputTool.eraser
+        
+        return UIMenu(children: [
+            UIAction(title: pen.displayName, image: pen.icon, state: drawSettings.drawTool == .pen ? .on : .off, handler: { [weak self] action in
+                guard let self else {
+                    return
+                }
+                self.markupSelectButton.setTitle(EditInputTool.pen.displayName, for: UIControl.State())
+                self.delegate?.editPanelView(self, didChangeInput: .pen)
+            }),
+            
+            UIAction(title: eraser.displayName, image: eraser.icon, state: drawSettings.drawTool == .eraser ? .on : .off, handler: { [weak self] action in
+                guard let self else {
+                    return
+                }
+                self.markupSelectButton.setTitle(EditInputTool.eraser.displayName, for: UIControl.State())
+                self.delegate?.editPanelView(self, didChangeInput: .eraser)
+            }),
+        ])
     }
     
     private func createStrokeWidthMenu(drawSettings: LightboxController.DrawSettings) -> UIMenu {
-        UIMenu(children: [
+        return UIMenu(children: [
             UIAction(title: EditInputStrokeWidth.thin.displayName, state: drawSettings.strokeWidth == .thin ? .on : .off, handler: { [weak self] action in
                 guard let self else {
                     return
@@ -147,25 +208,6 @@ final class EditPanelView: UIView {
                 }
                 self.strokeWidthButton.setTitle(EditInputStrokeWidth.large.displayName, for: UIControl.State())
                 self.delegate?.editPanelView(self, didChangeStrokeWidth: .large)
-            }),
-        ])
-    }
-    
-    private func createInputToolMenu(drawSettings: LightboxController.DrawSettings) -> UIMenu {
-        UIMenu(children: [
-            UIAction(title: EditInputTool.pen.displayName, state: drawSettings.drawTool == .pen ? .on : .off, handler: { [weak self] action in
-                guard let self else {
-                    return
-                }
-                self.markupSelectButton.setTitle(EditInputTool.pen.displayName, for: UIControl.State())
-                self.delegate?.editPanelView(self, didChangeInput: .pen)
-            }),
-            UIAction(title: EditInputTool.eraser.displayName, state: drawSettings.drawTool == .eraser ? .on : .off, handler: { [weak self] action in
-                guard let self else {
-                    return
-                }
-                self.markupSelectButton.setTitle(EditInputTool.eraser.displayName, for: UIControl.State())
-                self.delegate?.editPanelView(self, didChangeInput: .eraser)
             }),
         ])
     }
