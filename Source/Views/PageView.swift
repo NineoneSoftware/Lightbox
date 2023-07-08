@@ -185,7 +185,7 @@ class PageView: UIScrollView {
         
         DispatchQueue.main.async { [weak self] in
             
-            guard let image = drawView.render(over: self?.imageView.image) else {
+            guard let image = drawView.render(over: self?.imageView.image, scale: 1.0) else {
                 completion(nil, nil)
                 return
             }
